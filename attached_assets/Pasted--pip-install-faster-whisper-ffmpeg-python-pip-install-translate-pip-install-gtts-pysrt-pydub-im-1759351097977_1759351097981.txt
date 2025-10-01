@@ -1,0 +1,156 @@
+!pip install faster-whisper ffmpeg-python
+!pip install translate
+!pip install gtts pysrt pydub
+
+
+*import Modules
+
+import time
+import math
+import ffmpeg
+
+from faster_whisper import WhisperModel
+
+input_video = "/content/drive/MyDrive/Video_translator/PDF EXTRACT.mp4"
+input_video_name = input_video.replace(".mp4", "")
+
+
+def extract_audio():
+    extracted_audio = "/content/drive/MyDrive/Video_translator/pdf-extracted-audio.wav"
+    stream = ffmpeg.input(input_video)
+    stream = ffmpeg.output(stream, extracted_audio)
+    ffmpeg.run(stream, overwrite_output=True)
+    return extracted_audio
+
+extracted_audio = extract_audio()
+
+
+def transcribe(audio):
+    model = WhisperModel("small")
+    segments, info = model.transcribe(audio)
+    language = info[0]
+    print("Transcription language", info[0])
+    segments = list(segments)
+    for segment in segments:
+        # print(segment)
+        print("[%.2fs -> %.2fs] %s" %
+              (segment.start, segment.end, segment.text))
+    return language, segments
+language, segments = transcribe(audio=extracted_audio)
+
+def generate_subtitle_file(language, segments):
+
+    subtitle_file = "/content/drive/MyDrive/Video_translator/pdf-extractor-english.srt"
+    text = ""
+    for index, segment in enumerate(segments):
+        segment_start = format_time(segment.start)
+        segment_end = format_time(segment.end)
+        text += f"{str(index+1)} \n"
+        text += f"{segment_start} --> {segment_end} \n"
+        text += f"{segment.text} \n"
+        text += "\n"
+
+    f = open(subtitle_file, "w")
+    f.write(text)
+    f.close()
+
+    return subtitle_file
+
+subtitle_file = generate_subtitle_file(
+    language=language,
+    segments=segments
+    )
+
+def format_time(seconds):
+
+    hours = math.floor(seconds / 3600)
+    seconds %= 3600
+    minutes = math.floor(seconds / 60)
+    seconds %= 60
+    milliseconds = round((seconds - math.floor(seconds)) * 1000)
+    seconds = math.floor(seconds)
+    formatted_time = f"{hours:02d}:{minutes:02d}:{seconds:01d},{milliseconds:03d}"
+
+    return formatted_time
+
+*Translate Subtitle
+import pysrt
+from translate import Translator
+
+
+def translate_text(text, to_lang,from_lang):
+    translate = Translator(to_lang=to_lang , from_lang=from_lang)
+    text = translate.translate(text)
+    return text
+
+
+
+subs = pysrt.open("/content/drive/MyDrive/Video_translator/pdf-extractor-english.srt")
+
+for sub in subs:
+    sub.text = translate_text(sub.text,to_lang="ta",from_lang="en")
+
+subs.save('/content/drive/MyDrive/Video_translator/pdf-extractor-tamil.srt')
+
+*Generate audio for the tranlstae subtitle
+
+import pysrt
+from gtts import gTTS
+from pydub import AudioSegment
+import os
+
+# Load the subtitle file
+subs = pysrt.open('/content/drive/MyDrive/Video_translator/pdf-extractor-tamil.srt')
+
+# Initialize an empty AudioSegment
+combined = AudioSegment.silent(duration=0)
+
+# Iterate through each subtitle
+for sub in subs:
+    start_time = sub.start.ordinal / 1000.0  # convert to seconds
+    text = sub.text
+
+    # Generate speech using gTTS
+    tts = gTTS(text, lang='ta')
+    tts.save('temp.mp3')
+
+    # Load the temporary mp3 file and convert to wav
+    audio = AudioSegment.from_mp3('temp.mp3')
+
+    # Calculate the position to insert the audio
+    current_duration = len(combined)
+    silent_duration = start_time * 1000 - current_duration
+
+    if silent_duration > 0:
+        # Add silence to fill the gap between the current audio and the next subtitle
+        combined += AudioSegment.silent(duration=silent_duration)
+
+    # Append the audio to the combined AudioSegment
+    combined += audio
+
+# Export the combined audio as a WAV file
+combined.export('/content/drive/MyDrive/Video_translator/pdf-extractor-tamil.wav', format='wav')
+
+# Cleanup the temporary file
+os.remove('temp.mp3')
+
+print('WAV file with timestamps preserved created successfully.')
+
+
+*Change the audio track of this file
+
+from moviepy.editor import VideoFileClip, AudioFileClip
+
+# Load the video file
+video = VideoFileClip('/content/drive/MyDrive/Video_translator/PDF EXTRACT.mp4')
+
+# Load the new audio file
+audio = AudioFileClip('/content/drive/MyDrive/Video_translator/pdf-extractor-tamil.wav')
+
+# Set the new audio to the video
+video_with_new_audio = video.set_audio(audio)
+
+# Save the new video file
+video_with_new_audio.write_videofile('/content/drive/MyDrive/Video_translator/pdf-output-tamil.mp4', codec='libx264', audio_codec='aac')
+
+print('Video with new audio track created successfully.')
