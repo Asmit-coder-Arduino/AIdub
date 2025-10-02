@@ -475,8 +475,9 @@ def display_progress_tracker():
         ('video_merging', '🎬 Video Merging', 'Creating final video')
     ]
     
-    st.markdown("<div class='progress-tracker'>", unsafe_allow_html=True)
-    st.markdown("<h3 style='text-align: center; color: #667eea; margin-top: 0; margin-bottom: 20px;'>📊 Processing Status</h3>", unsafe_allow_html=True)
+    html_parts = []
+    html_parts.append("<div class='progress-tracker'>")
+    html_parts.append("<h3 style='text-align: center; color: #667eea; margin-top: 0; margin-bottom: 20px;'>📊 Processing Status</h3>")
     
     for task_id, task_name, task_desc in tasks:
         status = st.session_state.progress_status[task_id]
@@ -491,7 +492,7 @@ def display_progress_tracker():
             icon = '○'
             icon_class = 'pending'
         
-        st.markdown(f"""
+        html_parts.append(f"""
         <div class='progress-step {status}'>
             <div class='progress-icon {icon_class}'>{icon}</div>
             <div class='progress-text {status}'>
@@ -499,9 +500,11 @@ def display_progress_tracker():
                 <br><small style='opacity: 0.8;'>{task_desc}</small>
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
     
-    st.markdown("</div>", unsafe_allow_html=True)
+    html_parts.append("</div>")
+    
+    st.markdown("".join(html_parts), unsafe_allow_html=True)
 
 def cleanup_temp_dir():
     """Clean up temporary directory"""
