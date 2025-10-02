@@ -560,9 +560,9 @@ def process_video_stage1(video_file, target_language, source_language):
         with open(video_path, "wb") as f:
             f.write(video_file.read())
         
-        progress_bar = st.progress(0)
-        status_text = st.empty()
         progress_container = st.empty()
+        status_text = st.empty()
+        progress_bar = st.progress(0)
         
         # Step 1: Extract audio
         st.session_state.progress_status['audio_extraction'] = 'processing'
