@@ -780,7 +780,7 @@ if st.session_state.start_stage2 and not st.session_state.processed_video:
     st.rerun()
 
 # Subtitle Review Stage
-if st.session_state.review_stage and not st.session_state.processed_video:
+if st.session_state.review_stage and not st.session_state.processed_video and not st.session_state.start_stage2:
     st.divider()
     st.success("✅ Subtitles are ready for review!")
     st.markdown("<h3 style='color: #2a9d8f; font-weight: 700; text-align: center;'>📝 Review and Edit Subtitles</h3>", unsafe_allow_html=True)
