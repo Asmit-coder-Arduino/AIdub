@@ -221,6 +221,7 @@ st.markdown("""
         background: linear-gradient(white, white) padding-box,
                     linear-gradient(135deg, #667eea, #764ba2, #f093fb) border-box;
         transition: all 0.3s ease;
+        color: #000000 !important;
     }
     
     .stTextArea textarea:focus {
