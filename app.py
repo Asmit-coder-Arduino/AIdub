@@ -15,7 +15,9 @@ from utils.audio_generator import generate_dubbed_audio
 st.set_page_config(
     page_title="Video Dubbing App",
     page_icon="🎬",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="collapsed",
+    menu_items=None
 )
 
 # Custom CSS for vibrant, animated styling
@@ -293,8 +295,168 @@ st.markdown("""
         margin-right: 10px;
         animation: pulse 2s ease-in-out infinite;
     }
+    
+    /* Fix mobile view text truncation */
+    @media (max-width: 768px) {
+        .stFileUploader label small {
+            white-space: normal !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
+            word-wrap: break-word !important;
+            display: block !important;
+        }
+    }
+    
+    /* Progress tracker styling */
+    .progress-tracker {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin: 20px 0;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .progress-step {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+    
+    .progress-step.completed {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        border-left: 5px solid #28a745;
+    }
+    
+    .progress-step.processing {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        border-left: 5px solid #ffc107;
+        animation: pulse 1.5s ease-in-out infinite;
+    }
+    
+    .progress-step.pending {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-left: 5px solid #6c757d;
+    }
+    
+    .progress-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        font-size: 1.2em;
+        font-weight: bold;
+    }
+    
+    .progress-icon.completed {
+        background: #28a745;
+        color: white;
+        animation: checkmark 0.5s ease-in-out;
+    }
+    
+    .progress-icon.processing {
+        background: #ffc107;
+        color: white;
+        animation: spin 2s linear infinite;
+    }
+    
+    .progress-icon.pending {
+        background: #6c757d;
+        color: white;
+    }
+    
+    @keyframes checkmark {
+        0% { transform: scale(0); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .progress-text {
+        flex: 1;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .progress-text.completed {
+        color: #28a745;
+    }
+    
+    .progress-text.processing {
+        color: #ffc107;
+    }
     </style>
 """, unsafe_allow_html=True)
+
+# Sidebar for theme selection
+with st.sidebar:
+    st.markdown("<h3 style='color: #667eea;'>⚙️ Settings</h3>", unsafe_allow_html=True)
+    theme = st.selectbox(
+        "Theme",
+        options=["System", "Light", "Dark"],
+        index=0,
+        help="Select your preferred theme"
+    )
+
+# Apply theme-specific CSS
+if theme == "Dark":
+    st.markdown("""
+    <style>
+    .main {
+        background: linear-gradient(-45deg, #1a1a2e, #16213e, #0f3460, #1a1a2e) !important;
+    }
+    .main > div {
+        background-color: rgba(30, 30, 46, 0.95) !important;
+        color: #e0e0e0 !important;
+    }
+    .main h1, .main h2, .main h3, .main p, .main div {
+        color: #e0e0e0 !important;
+    }
+    .stFileUploader {
+        background: linear-gradient(135deg, #2d3561, #3e4a7a, #4a5f8f, #2d3561) !important;
+        border-color: #4a5f8f !important;
+    }
+    .stSelectbox {
+        background: linear-gradient(135deg, #2d3561 0%, #3e4a7a 100%) !important;
+    }
+    .progress-tracker {
+        background: rgba(30, 30, 46, 0.9) !important;
+        color: #e0e0e0 !important;
+    }
+    .progress-step {
+        background: linear-gradient(135deg, #2d3561 0%, #3e4a7a 100%) !important;
+    }
+    .stTextArea textarea {
+        background-color: #2d3561 !important;
+        color: #e0e0e0 !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+elif theme == "Light":
+    st.markdown("""
+    <style>
+    .main {
+        background: linear-gradient(-45deg, #ffecd2, #fcb69f, #ff9a9e, #fad0c4) !important;
+    }
+    .main > div {
+        background-color: rgba(255, 255, 255, 0.98) !important;
+        color: #2c3e50 !important;
+    }
+    .main h1, .main h2, .main h3, .main p, .main div {
+        color: #2c3e50 !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
 # Initialize session state
 if 'processing' not in st.session_state:
@@ -315,6 +477,15 @@ if 'audio_path' not in st.session_state:
     st.session_state.audio_path = None
 if 'target_lang_code' not in st.session_state:
     st.session_state.target_lang_code = None
+if 'progress_status' not in st.session_state:
+    st.session_state.progress_status = {
+        'audio_extraction': 'pending',
+        'transcription': 'pending',
+        'translation': 'pending',
+        'subtitle_generation': 'pending',
+        'audio_generation': 'pending',
+        'video_merging': 'pending'
+    }
 
 # Language options
 LANGUAGES = {
@@ -340,6 +511,45 @@ LANGUAGES = {
     "Malay": "ms"
 }
 
+def display_progress_tracker():
+    """Display animated progress tracker for video processing"""
+    tasks = [
+        ('audio_extraction', '🎵 Audio Extraction', 'Extracting audio from video'),
+        ('transcription', '📝 Transcription', 'Converting speech to text'),
+        ('translation', '🌐 Translation', 'Translating to target language'),
+        ('subtitle_generation', '📄 Subtitle Generation', 'Creating subtitle files'),
+        ('audio_generation', '🎤 Audio Generation', 'Generating dubbed audio'),
+        ('video_merging', '🎬 Video Merging', 'Creating final video')
+    ]
+    
+    st.markdown("<div class='progress-tracker'>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align: center; color: #667eea; margin-bottom: 20px;'>📊 Processing Status</h3>", unsafe_allow_html=True)
+    
+    for task_id, task_name, task_desc in tasks:
+        status = st.session_state.progress_status[task_id]
+        
+        if status == 'completed':
+            icon = '✓'
+            icon_class = 'completed'
+        elif status == 'processing':
+            icon = '⟳'
+            icon_class = 'processing'
+        else:
+            icon = '○'
+            icon_class = 'pending'
+        
+        st.markdown(f"""
+        <div class='progress-step {status}'>
+            <div class='progress-icon {icon_class}'>{icon}</div>
+            <div class='progress-text {status}'>
+                <strong>{task_name}</strong>
+                <br><small style='opacity: 0.8;'>{task_desc}</small>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    st.markdown("</div>", unsafe_allow_html=True)
+
 def cleanup_temp_dir():
     """Clean up temporary directory"""
     if st.session_state.temp_dir and os.path.exists(st.session_state.temp_dir):
@@ -348,6 +558,17 @@ def cleanup_temp_dir():
             st.session_state.temp_dir = None
         except Exception as e:
             st.error(f"Error cleaning up temporary files: {str(e)}")
+
+def reset_progress_status():
+    """Reset all progress statuses to pending"""
+    st.session_state.progress_status = {
+        'audio_extraction': 'pending',
+        'transcription': 'pending',
+        'translation': 'pending',
+        'subtitle_generation': 'pending',
+        'audio_generation': 'pending',
+        'video_merging': 'pending'
+    }
 
 def read_srt_file(srt_path):
     """Read and parse SRT file into a list of subtitle dictionaries"""
@@ -398,30 +619,60 @@ def process_video_stage1(video_file, target_language, source_language):
         
         progress_bar = st.progress(0)
         status_text = st.empty()
+        progress_container = st.empty()
         
         # Step 1: Extract audio
+        st.session_state.progress_status['audio_extraction'] = 'processing'
+        progress_container.empty()
+        with progress_container.container():
+            display_progress_tracker()
         status_text.text("🎵 Extracting audio from video...")
         progress_bar.progress(20)
         audio_path = os.path.join(temp_dir, "extracted_audio.wav")
         extract_audio(video_path, audio_path)
+        st.session_state.progress_status['audio_extraction'] = 'completed'
+        progress_container.empty()
+        with progress_container.container():
+            display_progress_tracker()
         
         # Step 2: Transcribe audio
+        st.session_state.progress_status['transcription'] = 'processing'
+        progress_container.empty()
+        with progress_container.container():
+            display_progress_tracker()
         status_text.text("📝 Transcribing audio (this may take a few minutes)...")
         progress_bar.progress(40)
         language, segments = transcribe_audio(audio_path)
+        st.session_state.progress_status['transcription'] = 'completed'
+        progress_container.empty()
+        with progress_container.container():
+            display_progress_tracker()
         
         # Step 3: Generate original subtitle file
+        st.session_state.progress_status['subtitle_generation'] = 'processing'
+        progress_container.empty()
+        with progress_container.container():
+            display_progress_tracker()
         status_text.text("📄 Generating subtitle file...")
         progress_bar.progress(60)
         original_subtitle_path = os.path.join(temp_dir, f"subtitles_{language}.srt")
         generate_subtitle_file(segments, original_subtitle_path)
         
         # Step 4: Translate subtitles
+        st.session_state.progress_status['translation'] = 'processing'
+        progress_container.empty()
+        with progress_container.container():
+            display_progress_tracker()
         status_text.text(f"🌐 Translating subtitles to {target_language}...")
         progress_bar.progress(80)
         translated_subtitle_path = os.path.join(temp_dir, f"subtitles_{LANGUAGES[target_language]}.srt")
         translate_subtitles(original_subtitle_path, translated_subtitle_path, 
                           LANGUAGES[target_language], source_language)
+        st.session_state.progress_status['translation'] = 'completed'
+        st.session_state.progress_status['subtitle_generation'] = 'completed'
+        progress_container.empty()
+        with progress_container.container():
+            display_progress_tracker()
         
         # Complete stage 1
         progress_bar.progress(100)
@@ -432,6 +683,7 @@ def process_video_stage1(video_file, target_language, source_language):
     except Exception as e:
         st.error(f"Error during processing: {str(e)}")
         cleanup_temp_dir()
+        reset_progress_status()
         return None, None, None, None
 
 def process_video_stage2(video_path, translated_subtitle_path, target_lang_code):
@@ -441,18 +693,35 @@ def process_video_stage2(video_path, translated_subtitle_path, target_lang_code)
         
         progress_bar = st.progress(0)
         status_text = st.empty()
+        progress_container = st.empty()
         
         # Step 1: Generate dubbed audio
+        st.session_state.progress_status['audio_generation'] = 'processing'
+        progress_container.empty()
+        with progress_container.container():
+            display_progress_tracker()
         status_text.text("🎤 Generating dubbed audio (this may take a few minutes)...")
         progress_bar.progress(30)
         dubbed_audio_path = os.path.join(temp_dir, "dubbed_audio.wav")
         generate_dubbed_audio(translated_subtitle_path, dubbed_audio_path, target_lang_code)
+        st.session_state.progress_status['audio_generation'] = 'completed'
+        progress_container.empty()
+        with progress_container.container():
+            display_progress_tracker()
         
         # Step 2: Replace audio track
+        st.session_state.progress_status['video_merging'] = 'processing'
+        progress_container.empty()
+        with progress_container.container():
+            display_progress_tracker()
         status_text.text("🎬 Creating final dubbed video...")
         progress_bar.progress(70)
         output_video_path = os.path.join(temp_dir, "output_dubbed_video.mp4")
         replace_audio_track(video_path, dubbed_audio_path, output_video_path)
+        st.session_state.progress_status['video_merging'] = 'completed'
+        progress_container.empty()
+        with progress_container.container():
+            display_progress_tracker()
         
         # Complete
         progress_bar.progress(100)
@@ -462,6 +731,7 @@ def process_video_stage2(video_path, translated_subtitle_path, target_lang_code)
         
     except Exception as e:
         st.error(f"Error during dubbing: {str(e)}")
+        reset_progress_status()
         return None
 
 # Main app UI
@@ -514,6 +784,7 @@ if uploaded_file is not None and not st.session_state.review_stage:
     
     if st.button("🚀 Start Dubbing Process", disabled=st.session_state.processing, type="primary"):
         st.session_state.processing = True
+        reset_progress_status()
         
         # Get source language code
         src_lang = LANGUAGES[source_language]
@@ -625,6 +896,7 @@ if st.session_state.review_stage and not st.session_state.processed_video:
         with col3:
             if st.button("🔄 Start Over", use_container_width=True):
                 cleanup_temp_dir()
+                reset_progress_status()
                 st.session_state.review_stage = False
                 st.session_state.original_subtitles_data = []
                 st.session_state.translated_subtitles_data = []
@@ -684,6 +956,7 @@ if st.session_state.processed_video and os.path.exists(st.session_state.processe
     # Reset button
     if st.button("🔄 Process Another Video"):
         cleanup_temp_dir()
+        reset_progress_status()
         st.session_state.processed_video = None
         st.session_state.original_subtitle = None
         st.session_state.translated_subtitle = None
