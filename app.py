@@ -312,7 +312,7 @@ st.markdown("""
         background: white;
         border-radius: 15px;
         padding: 25px;
-        margin: 20px 0;
+        margin: 0 0 20px 0;
         box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }
     
