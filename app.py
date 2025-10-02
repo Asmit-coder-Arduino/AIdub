@@ -754,7 +754,6 @@ if uploaded_file is not None and not st.session_state.review_stage:
 
 # Stage 2 Processing (after review approval)
 if st.session_state.start_stage2 and not st.session_state.processed_video:
-    st.divider()
     st.session_state.processing = True
     
     # Create progress container in the same location as stage 1
