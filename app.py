@@ -398,65 +398,6 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Sidebar for theme selection
-with st.sidebar:
-    st.markdown("<h3 style='color: #667eea;'>⚙️ Settings</h3>", unsafe_allow_html=True)
-    theme = st.selectbox(
-        "Theme",
-        options=["System", "Light", "Dark"],
-        index=0,
-        help="Select your preferred theme"
-    )
-
-# Apply theme-specific CSS
-if theme == "Dark":
-    st.markdown("""
-    <style>
-    .main {
-        background: linear-gradient(-45deg, #1a1a2e, #16213e, #0f3460, #1a1a2e) !important;
-    }
-    .main > div {
-        background-color: rgba(30, 30, 46, 0.95) !important;
-        color: #e0e0e0 !important;
-    }
-    .main h1, .main h2, .main h3, .main p, .main div {
-        color: #e0e0e0 !important;
-    }
-    .stFileUploader {
-        background: linear-gradient(135deg, #2d3561, #3e4a7a, #4a5f8f, #2d3561) !important;
-        border-color: #4a5f8f !important;
-    }
-    .stSelectbox {
-        background: linear-gradient(135deg, #2d3561 0%, #3e4a7a 100%) !important;
-    }
-    .progress-tracker {
-        background: rgba(30, 30, 46, 0.9) !important;
-        color: #e0e0e0 !important;
-    }
-    .progress-step {
-        background: linear-gradient(135deg, #2d3561 0%, #3e4a7a 100%) !important;
-    }
-    .stTextArea textarea {
-        background-color: #2d3561 !important;
-        color: #e0e0e0 !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-elif theme == "Light":
-    st.markdown("""
-    <style>
-    .main {
-        background: linear-gradient(-45deg, #ffecd2, #fcb69f, #ff9a9e, #fad0c4) !important;
-    }
-    .main > div {
-        background-color: rgba(255, 255, 255, 0.98) !important;
-        color: #2c3e50 !important;
-    }
-    .main h1, .main h2, .main h3, .main p, .main div {
-        color: #2c3e50 !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
 
 # Initialize session state
 if 'processing' not in st.session_state:
@@ -486,6 +427,8 @@ if 'progress_status' not in st.session_state:
         'audio_generation': 'pending',
         'video_merging': 'pending'
     }
+if 'start_stage2' not in st.session_state:
+    st.session_state.start_stage2 = False
 
 # Language options
 LANGUAGES = {
@@ -686,14 +629,13 @@ def process_video_stage1(video_file, target_language, source_language):
         reset_progress_status()
         return None, None, None, None
 
-def process_video_stage2(video_path, translated_subtitle_path, target_lang_code):
+def process_video_stage2(video_path, translated_subtitle_path, target_lang_code, progress_container):
     """Stage 2: Generate dubbed audio and create final video"""
     try:
         temp_dir = st.session_state.temp_dir
         
         progress_bar = st.progress(0)
         status_text = st.empty()
-        progress_container = st.empty()
         
         # Step 1: Generate dubbed audio
         st.session_state.progress_status['audio_generation'] = 'processing'
@@ -810,6 +752,29 @@ if uploaded_file is not None and not st.session_state.review_stage:
         st.session_state.processing = False
         st.rerun()
 
+# Stage 2 Processing (after review approval)
+if st.session_state.start_stage2 and not st.session_state.processed_video:
+    st.divider()
+    st.session_state.processing = True
+    
+    # Create progress container in the same location as stage 1
+    progress_container = st.empty()
+    
+    # Process stage 2 - Generate dubbed video
+    output_path = process_video_stage2(
+        st.session_state.video_path,
+        st.session_state.translated_subtitle,
+        st.session_state.target_lang_code,
+        progress_container
+    )
+    
+    if output_path and os.path.exists(output_path):
+        st.session_state.processed_video = output_path
+        st.session_state.start_stage2 = False
+    
+    st.session_state.processing = False
+    st.rerun()
+
 # Subtitle Review Stage
 if st.session_state.review_stage and not st.session_state.processed_video:
     st.divider()
@@ -866,8 +831,6 @@ if st.session_state.review_stage and not st.session_state.processed_video:
         
         with col2:
             if st.button("✅ Approve and Generate Dubbed Video", type="primary", use_container_width=True):
-                st.session_state.processing = True
-                
                 # Update translated subtitles data with edited text
                 for i, sub in enumerate(st.session_state.translated_subtitles_data):
                     sub['text'] = st.session_state.edited_translations[i]
@@ -878,19 +841,10 @@ if st.session_state.review_stage and not st.session_state.processed_video:
                     st.session_state.translated_subtitle
                 )
                 
-                # Process stage 2 - Generate dubbed video
-                output_path = process_video_stage2(
-                    st.session_state.video_path,
-                    st.session_state.translated_subtitle,
-                    st.session_state.target_lang_code
-                )
-                
-                if output_path and os.path.exists(output_path):
-                    st.session_state.processed_video = output_path
-                    st.session_state.review_stage = False
-                    st.session_state.edited_translations = {}
-                
-                st.session_state.processing = False
+                # Set flag to start stage 2 and hide review
+                st.session_state.start_stage2 = True
+                st.session_state.review_stage = False
+                st.session_state.edited_translations = {}
                 st.rerun()
         
         with col3:
@@ -898,6 +852,7 @@ if st.session_state.review_stage and not st.session_state.processed_video:
                 cleanup_temp_dir()
                 reset_progress_status()
                 st.session_state.review_stage = False
+                st.session_state.start_stage2 = False
                 st.session_state.original_subtitles_data = []
                 st.session_state.translated_subtitles_data = []
                 st.session_state.edited_translations = {}
@@ -961,6 +916,7 @@ if st.session_state.processed_video and os.path.exists(st.session_state.processe
         st.session_state.original_subtitle = None
         st.session_state.translated_subtitle = None
         st.session_state.review_stage = False
+        st.session_state.start_stage2 = False
         st.session_state.original_subtitles_data = []
         st.session_state.translated_subtitles_data = []
         st.session_state.edited_translations = {}
