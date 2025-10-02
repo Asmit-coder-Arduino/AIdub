@@ -752,6 +752,10 @@ if uploaded_file is not None and not st.session_state.review_stage:
             st.session_state.original_subtitle = original_srt
             st.session_state.translated_subtitle = translated_srt
             st.session_state.target_lang_code = LANGUAGES[target_language]
+            # Initialize fresh edited translations for the new video
+            st.session_state.edited_translations = {
+                i: sub['text'] for i, sub in enumerate(st.session_state.translated_subtitles_data)
+            }
             st.session_state.review_stage = True
         
         st.session_state.processing = False
@@ -773,19 +777,29 @@ if st.session_state.start_stage2 and not st.session_state.processed_video:
     # Create progress container
     progress_container = st.empty()
     
-    # Process stage 2 - Generate dubbed video
-    output_path = process_video_stage2(
-        st.session_state.video_path,
-        st.session_state.translated_subtitle,
-        st.session_state.target_lang_code,
-        progress_container
-    )
+    try:
+        # Process stage 2 - Generate dubbed video
+        output_path = process_video_stage2(
+            st.session_state.video_path,
+            st.session_state.translated_subtitle,
+            st.session_state.target_lang_code,
+            progress_container
+        )
+        
+        if output_path and os.path.exists(output_path):
+            st.session_state.processed_video = output_path
+            st.session_state.start_stage2 = False
+        else:
+            # If processing failed, reset flags so user can retry
+            st.session_state.start_stage2 = False
+            st.session_state.review_stage = True
+    finally:
+        # Always reset processing flag and clear start_stage2 to prevent infinite loops
+        st.session_state.processing = False
+        if st.session_state.start_stage2:
+            st.session_state.start_stage2 = False
+            st.session_state.review_stage = True
     
-    if output_path and os.path.exists(output_path):
-        st.session_state.processed_video = output_path
-        st.session_state.start_stage2 = False
-    
-    st.session_state.processing = False
     st.rerun()
 
 # Subtitle Review Stage
