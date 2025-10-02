@@ -18,6 +18,143 @@ st.set_page_config(
     layout="wide"
 )
 
+# Custom CSS for enhanced styling
+st.markdown("""
+    <style>
+    /* Main title styling */
+    .main h1 {
+        color: #1f77b4;
+        font-weight: 700;
+        text-align: center;
+        padding: 20px 0;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    /* Subtitle and section headers */
+    .main h2, .main h3 {
+        color: #2c3e50;
+        font-weight: 600;
+        margin-top: 20px;
+    }
+    
+    /* Card-like containers for sections */
+    .stContainer {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    /* File uploader styling */
+    .stFileUploader {
+        background-color: white;
+        border: 2px dashed #667eea;
+        border-radius: 10px;
+        padding: 20px;
+        transition: all 0.3s ease;
+    }
+    
+    .stFileUploader:hover {
+        border-color: #764ba2;
+        box-shadow: 0 4px 8px rgba(102, 126, 234, 0.2);
+    }
+    
+    /* Button styling */
+    .stButton > button {
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    /* Primary button enhancement */
+    .stButton > button[kind="primary"] {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    /* Selectbox styling */
+    .stSelectbox {
+        background-color: white;
+        border-radius: 8px;
+    }
+    
+    /* Progress bar styling */
+    .stProgress > div > div > div > div {
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    /* Info/Success/Warning boxes */
+    .stAlert {
+        border-radius: 10px;
+        border-left: 4px solid;
+        padding: 15px;
+    }
+    
+    /* Text area styling */
+    .stTextArea textarea {
+        border-radius: 8px;
+        border: 2px solid #e0e0e0;
+        transition: border-color 0.3s ease;
+    }
+    
+    .stTextArea textarea:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+    }
+    
+    /* Divider styling */
+    hr {
+        margin: 30px 0;
+        border: none;
+        border-top: 2px solid #e0e0e0;
+    }
+    
+    /* Video player styling */
+    video {
+        border-radius: 12px;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+    
+    /* Download button section */
+    .stDownloadButton > button {
+        width: 100%;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+    
+    /* Footer styling */
+    .main > div:last-child {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 30px;
+    }
+    
+    /* Spacing improvements */
+    .element-container {
+        margin-bottom: 15px;
+    }
+    
+    /* Enhanced subtitle review section */
+    .subtitle-pair {
+        background-color: white;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 # Initialize session state
 if 'processing' not in st.session_state:
     st.session_state.processing = False
@@ -189,9 +326,16 @@ def process_video_stage2(video_path, translated_subtitle_path, target_lang_code)
 # Main app UI
 st.title("🎬 Video Dubbing Application")
 st.markdown("""
-Upload a video file, select a target language, and get an automatically dubbed version with translated audio.
-This application uses local AI models for transcription and translation without requiring external API keys.
-""")
+<div style='text-align: center; padding: 10px 0 30px 0;'>
+    <p style='font-size: 1.2em; color: #555; margin-bottom: 10px;'>
+        Transform your videos with AI-powered dubbing in multiple languages
+    </p>
+    <p style='color: #777; font-size: 0.95em;'>
+        Upload a video, select your target language, and get a professionally dubbed version with translated audio.<br/>
+        ✨ Powered by local AI models • No external API keys required • 100% private and secure
+    </p>
+</div>
+""", unsafe_allow_html=True)
 
 # Create two columns for layout
 col1, col2 = st.columns([2, 1])
@@ -216,10 +360,10 @@ with col2:
     )
     
     source_language = st.selectbox(
-        "Source Language (optional)",
-        options=["Auto-detect"] + list(LANGUAGES.keys()),
+        "Source Language",
+        options=list(LANGUAGES.keys()),
         index=0,
-        help="Leave as 'Auto-detect' to automatically detect the source language",
+        help="Select the source language of your video",
         disabled=st.session_state.processing
     )
 
@@ -230,8 +374,8 @@ if uploaded_file is not None and not st.session_state.review_stage:
     if st.button("🚀 Start Dubbing Process", disabled=st.session_state.processing, type="primary"):
         st.session_state.processing = True
         
-        # Determine source language
-        src_lang = "auto" if source_language == "Auto-detect" else LANGUAGES[source_language]
+        # Get source language code
+        src_lang = LANGUAGES[source_language]
         
         # Process the video - Stage 1 (transcribe and translate)
         video_path, audio_path, original_srt, translated_srt = process_video_stage1(
@@ -351,9 +495,15 @@ if st.session_state.review_stage and not st.session_state.processed_video:
 # Display results if processing is complete
 if st.session_state.processed_video and os.path.exists(st.session_state.processed_video):
     st.divider()
-    st.success("🎉 Your dubbed video is ready!")
+    st.markdown("""
+    <div style='text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); border-radius: 10px; margin: 20px 0;'>
+        <h2 style='color: #667eea; margin: 0;'>🎉 Your Dubbed Video is Ready!</h2>
+        <p style='color: #666; margin-top: 10px;'>Download your files below and preview the result</p>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Create download section
+    st.markdown("<h3 style='text-align: center; color: #2c3e50; margin: 30px 0 20px 0;'>📥 Download Files</h3>", unsafe_allow_html=True)
     col1, col2, col3 = st.columns(3)
     
     with col1:
@@ -408,13 +558,36 @@ if st.session_state.processed_video and os.path.exists(st.session_state.processe
 # Footer
 st.divider()
 st.markdown("""
-### ℹ️ How it works:
-1. **Audio Extraction**: Extracts audio track from the uploaded video
-2. **Transcription**: Uses faster-whisper AI model to transcribe speech to text
-3. **Translation**: Translates the transcribed text to your target language
-4. **Subtitle Generation**: Creates SRT subtitle files for both original and translated text
-5. **Audio Generation**: Generates dubbed audio using Google Text-to-Speech
-6. **Video Merging**: Replaces the original audio with the dubbed version
-
-**Note**: Processing time depends on video length. Longer videos will take more time to process.
-""")
+<div style='background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); padding: 30px; border-radius: 15px; margin-top: 40px;'>
+    <h3 style='color: #2c3e50; text-align: center; margin-bottom: 25px;'>ℹ️ How It Works</h3>
+    <div style='display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;'>
+        <div style='background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);'>
+            <h4 style='color: #667eea; margin-bottom: 10px;'>🎵 1. Audio Extraction</h4>
+            <p style='color: #666; font-size: 0.9em; margin: 0;'>Extracts the audio track from your uploaded video file</p>
+        </div>
+        <div style='background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);'>
+            <h4 style='color: #667eea; margin-bottom: 10px;'>📝 2. Transcription</h4>
+            <p style='color: #666; font-size: 0.9em; margin: 0;'>Uses faster-whisper AI to transcribe speech to text</p>
+        </div>
+        <div style='background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);'>
+            <h4 style='color: #667eea; margin-bottom: 10px;'>🌐 3. Translation</h4>
+            <p style='color: #666; font-size: 0.9em; margin: 0;'>Translates transcribed text to your target language</p>
+        </div>
+        <div style='background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);'>
+            <h4 style='color: #667eea; margin-bottom: 10px;'>📄 4. Subtitle Generation</h4>
+            <p style='color: #666; font-size: 0.9em; margin: 0;'>Creates SRT files for original and translated text</p>
+        </div>
+        <div style='background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);'>
+            <h4 style='color: #667eea; margin-bottom: 10px;'>🎤 5. Audio Generation</h4>
+            <p style='color: #666; font-size: 0.9em; margin: 0;'>Generates dubbed audio using Text-to-Speech</p>
+        </div>
+        <div style='background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);'>
+            <h4 style='color: #667eea; margin-bottom: 10px;'>🎬 6. Video Merging</h4>
+            <p style='color: #666; font-size: 0.9em; margin: 0;'>Replaces original audio with the dubbed version</p>
+        </div>
+    </div>
+    <p style='text-align: center; color: #555; margin-top: 25px; font-size: 0.9em;'>
+        ⏱️ <strong>Note:</strong> Processing time depends on video length. Longer videos will take more time to process.
+    </p>
+</div>
+""", unsafe_allow_html=True)
