@@ -761,7 +761,16 @@ if uploaded_file is not None and not st.session_state.review_stage:
 if st.session_state.start_stage2 and not st.session_state.processed_video:
     st.session_state.processing = True
     
-    # Create progress container in the same location as stage 1
+    # Display processing header
+    st.divider()
+    st.markdown("""
+    <div style='text-align: center; padding: 15px; background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); border-radius: 10px; margin: 20px 0;'>
+        <h2 style='color: #667eea; margin: 0;'>🎬 Generating Dubbed Video</h2>
+        <p style='color: #666; margin-top: 8px;'>Please wait while we create your dubbed video...</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Create progress container
     progress_container = st.empty()
     
     # Process stage 2 - Generate dubbed video
