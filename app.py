@@ -66,6 +66,16 @@ st.markdown("""
         animation: slideIn 0.5s ease-out;
     }
     
+    /* Remove styling from containers that hold progress tracker */
+    .main > div:has(.progress-tracker) {
+        background: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        animation: none !important;
+    }
+    
     /* Main title styling with rainbow gradient */
     .main h1 {
         font-weight: 800;
