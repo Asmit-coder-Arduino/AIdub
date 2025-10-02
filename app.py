@@ -831,9 +831,9 @@ if st.session_state.review_stage and not st.session_state.processed_video:
         
         # Approval buttons
         st.divider()
-        col1, col2, col3 = st.columns([1, 1, 1])
+        col1, col2 = st.columns([1, 2])
         
-        with col2:
+        with col1:
             if st.button("✅ Approve and Generate Dubbed Video", type="primary", use_container_width=True):
                 # Update translated subtitles data with edited text
                 for i, sub in enumerate(st.session_state.translated_subtitles_data):
@@ -849,19 +849,6 @@ if st.session_state.review_stage and not st.session_state.processed_video:
                 st.session_state.start_stage2 = True
                 st.session_state.review_stage = False
                 st.session_state.edited_translations = {}
-                st.rerun()
-        
-        with col3:
-            if st.button("🔄 Start Over", use_container_width=True):
-                cleanup_temp_dir()
-                reset_progress_status()
-                st.session_state.review_stage = False
-                st.session_state.start_stage2 = False
-                st.session_state.original_subtitles_data = []
-                st.session_state.translated_subtitles_data = []
-                st.session_state.edited_translations = {}
-                st.session_state.video_path = None
-                st.session_state.audio_path = None
                 st.rerun()
 
 # Display results if processing is complete
