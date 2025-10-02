@@ -560,15 +560,18 @@ def process_video_stage1(video_file, target_language, source_language):
         with open(video_path, "wb") as f:
             f.write(video_file.read())
         
+        # Display progress tracker first
         progress_container = st.empty()
-        status_text = st.empty()
-        progress_bar = st.progress(0)
         
         # Step 1: Extract audio
         st.session_state.progress_status['audio_extraction'] = 'processing'
-        progress_container.empty()
         with progress_container.container():
             display_progress_tracker()
+        
+        # Create status text and progress bar after the tracker
+        status_text = st.empty()
+        progress_bar = st.progress(0)
+        
         status_text.text("🎵 Extracting audio from video...")
         progress_bar.progress(20)
         audio_path = os.path.join(temp_dir, "extracted_audio.wav")
