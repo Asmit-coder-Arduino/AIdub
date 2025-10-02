@@ -224,6 +224,12 @@ st.markdown("""
         color: #000000 !important;
     }
     
+    .stTextArea textarea:disabled {
+        color: #000000 !important;
+        -webkit-text-fill-color: #000000 !important;
+        opacity: 1 !important;
+    }
+    
     .stTextArea textarea:focus {
         border-color: transparent;
         box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
