@@ -464,7 +464,7 @@ LANGUAGES = {
     "Malay": "ms"
 }
 
-def display_progress_tracker():
+def display_progress_tracker(container=None):
     """Display animated progress tracker for video processing"""
     tasks = [
         ('audio_extraction', '🎵 Audio Extraction', 'Extracting audio from video'),
@@ -492,19 +492,22 @@ def display_progress_tracker():
             icon = '○'
             icon_class = 'pending'
         
-        html_parts.append(f"""
-        <div class='progress-step {status}'>
+        html_parts.append(f"""<div class='progress-step {status}'>
             <div class='progress-icon {icon_class}'>{icon}</div>
             <div class='progress-text {status}'>
                 <strong>{task_name}</strong>
                 <br><small style='opacity: 0.8;'>{task_desc}</small>
             </div>
-        </div>
-        """)
+        </div>""")
     
     html_parts.append("</div>")
     
-    st.markdown("".join(html_parts), unsafe_allow_html=True)
+    html_content = "".join(html_parts)
+    
+    if container:
+        container.markdown(html_content, unsafe_allow_html=True)
+    else:
+        st.markdown(html_content, unsafe_allow_html=True)
 
 def cleanup_temp_dir():
     """Clean up temporary directory"""
@@ -578,8 +581,7 @@ def process_video_stage1(video_file, target_language, source_language):
         
         # Step 1: Extract audio
         st.session_state.progress_status['audio_extraction'] = 'processing'
-        with progress_container.container():
-            display_progress_tracker()
+        display_progress_tracker(progress_container)
         
         # Create status text and progress bar after the tracker
         status_text = st.empty()
@@ -590,28 +592,20 @@ def process_video_stage1(video_file, target_language, source_language):
         audio_path = os.path.join(temp_dir, "extracted_audio.wav")
         extract_audio(video_path, audio_path)
         st.session_state.progress_status['audio_extraction'] = 'completed'
-        progress_container.empty()
-        with progress_container.container():
-            display_progress_tracker()
+        display_progress_tracker(progress_container)
         
         # Step 2: Transcribe audio
         st.session_state.progress_status['transcription'] = 'processing'
-        progress_container.empty()
-        with progress_container.container():
-            display_progress_tracker()
+        display_progress_tracker(progress_container)
         status_text.text("📝 Transcribing audio (this may take a few minutes)...")
         progress_bar.progress(40)
         language, segments = transcribe_audio(audio_path)
         st.session_state.progress_status['transcription'] = 'completed'
-        progress_container.empty()
-        with progress_container.container():
-            display_progress_tracker()
+        display_progress_tracker(progress_container)
         
         # Step 3: Generate original subtitle file
         st.session_state.progress_status['subtitle_generation'] = 'processing'
-        progress_container.empty()
-        with progress_container.container():
-            display_progress_tracker()
+        display_progress_tracker(progress_container)
         status_text.text("📄 Generating subtitle file...")
         progress_bar.progress(60)
         original_subtitle_path = os.path.join(temp_dir, f"subtitles_{language}.srt")
@@ -619,9 +613,7 @@ def process_video_stage1(video_file, target_language, source_language):
         
         # Step 4: Translate subtitles
         st.session_state.progress_status['translation'] = 'processing'
-        progress_container.empty()
-        with progress_container.container():
-            display_progress_tracker()
+        display_progress_tracker(progress_container)
         status_text.text(f"🌐 Translating subtitles to {target_language}...")
         progress_bar.progress(80)
         translated_subtitle_path = os.path.join(temp_dir, f"subtitles_{LANGUAGES[target_language]}.srt")
@@ -629,9 +621,7 @@ def process_video_stage1(video_file, target_language, source_language):
                           LANGUAGES[target_language], source_language)
         st.session_state.progress_status['translation'] = 'completed'
         st.session_state.progress_status['subtitle_generation'] = 'completed'
-        progress_container.empty()
-        with progress_container.container():
-            display_progress_tracker()
+        display_progress_tracker(progress_container)
         
         # Complete stage 1
         progress_bar.progress(100)
@@ -655,31 +645,23 @@ def process_video_stage2(video_path, translated_subtitle_path, target_lang_code,
         
         # Step 1: Generate dubbed audio
         st.session_state.progress_status['audio_generation'] = 'processing'
-        progress_container.empty()
-        with progress_container.container():
-            display_progress_tracker()
+        display_progress_tracker(progress_container)
         status_text.text("🎤 Generating dubbed audio (this may take a few minutes)...")
         progress_bar.progress(30)
         dubbed_audio_path = os.path.join(temp_dir, "dubbed_audio.wav")
         generate_dubbed_audio(translated_subtitle_path, dubbed_audio_path, target_lang_code)
         st.session_state.progress_status['audio_generation'] = 'completed'
-        progress_container.empty()
-        with progress_container.container():
-            display_progress_tracker()
+        display_progress_tracker(progress_container)
         
         # Step 2: Replace audio track
         st.session_state.progress_status['video_merging'] = 'processing'
-        progress_container.empty()
-        with progress_container.container():
-            display_progress_tracker()
+        display_progress_tracker(progress_container)
         status_text.text("🎬 Creating final dubbed video...")
         progress_bar.progress(70)
         output_video_path = os.path.join(temp_dir, "output_dubbed_video.mp4")
         replace_audio_track(video_path, dubbed_audio_path, output_video_path)
         st.session_state.progress_status['video_merging'] = 'completed'
-        progress_container.empty()
-        with progress_container.container():
-            display_progress_tracker()
+        display_progress_tracker(progress_container)
         
         # Complete
         progress_bar.progress(100)
