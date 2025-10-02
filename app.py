@@ -311,7 +311,7 @@ st.markdown("""
     .progress-tracker {
         background: white;
         border-radius: 15px;
-        padding: 25px;
+        padding: 10px 25px 25px 25px;
         margin: 0 0 20px 0;
         box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }
@@ -466,7 +466,7 @@ def display_progress_tracker():
     ]
     
     st.markdown("<div class='progress-tracker'>", unsafe_allow_html=True)
-    st.markdown("<h3 style='text-align: center; color: #667eea; margin-bottom: 20px;'>📊 Processing Status</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align: center; color: #667eea; margin-top: 0; margin-bottom: 20px;'>📊 Processing Status</h3>", unsafe_allow_html=True)
     
     for task_id, task_name, task_desc in tasks:
         status = st.session_state.progress_status[task_id]
