@@ -18,139 +18,280 @@ st.set_page_config(
     layout="wide"
 )
 
-# Custom CSS for enhanced styling
+# Custom CSS for vibrant, animated styling
 st.markdown("""
     <style>
-    /* Main title styling */
+    /* Animated gradient background */
+    @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.8; }
+    }
+    
+    @keyframes slideIn {
+        from { transform: translateX(-20px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes shimmer {
+        0% { background-position: -1000px 0; }
+        100% { background-position: 1000px 0; }
+    }
+    
+    /* Main container with colorful gradient background */
+    .main {
+        background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+        background-size: 400% 400%;
+        animation: gradientBG 15s ease infinite;
+    }
+    
+    .main > div {
+        background-color: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        padding: 30px;
+        margin: 20px auto;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        animation: slideIn 0.5s ease-out;
+    }
+    
+    /* Main title styling with rainbow gradient */
     .main h1 {
-        color: #1f77b4;
-        font-weight: 700;
+        font-weight: 800;
         text-align: center;
         padding: 20px 0;
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(45deg, #ff6b6b, #ee5a6f, #c06c84, #6c5b7b, #355c7d, #2a9d8f, #e9c46a, #f4a261, #e76f51);
+        background-size: 300% 300%;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
+        animation: gradientBG 8s ease infinite;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        filter: drop-shadow(0 0 20px rgba(255,255,255,0.5));
     }
     
-    /* Subtitle and section headers */
-    .main h2, .main h3 {
-        color: #2c3e50;
+    /* Subtitle and section headers with vibrant colors */
+    .main h2 {
+        color: #e73c7e;
+        font-weight: 700;
+        margin-top: 20px;
+        animation: float 3s ease-in-out infinite;
+    }
+    
+    .main h3 {
+        color: #23a6d5;
         font-weight: 600;
         margin-top: 20px;
     }
     
-    /* Card-like containers for sections */
+    /* Colorful card containers */
     .stContainer {
-        background-color: #f8f9fa;
-        border-radius: 10px;
-        padding: 20px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        background: linear-gradient(135deg, #667eea22 0%, #764ba222 100%);
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
     }
     
-    /* File uploader styling */
+    .stContainer:hover {
+        border-color: #667eea;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+    
+    /* File uploader with animated border */
     .stFileUploader {
-        background-color: white;
-        border: 2px dashed #667eea;
-        border-radius: 10px;
-        padding: 20px;
-        transition: all 0.3s ease;
+        background: linear-gradient(135deg, #ffeaa7, #fdcb6e, #e17055, #d63031);
+        background-size: 300% 300%;
+        animation: gradientBG 10s ease infinite;
+        border: 3px dashed #ffffff;
+        border-radius: 15px;
+        padding: 25px;
+        transition: all 0.4s ease;
     }
     
     .stFileUploader:hover {
-        border-color: #764ba2;
-        box-shadow: 0 4px 8px rgba(102, 126, 234, 0.2);
+        transform: scale(1.02);
+        box-shadow: 0 10px 30px rgba(230, 126, 34, 0.4);
     }
     
-    /* Button styling */
+    /* Animated buttons */
     .stButton > button {
-        border-radius: 8px;
-        font-weight: 600;
+        border-radius: 12px;
+        font-weight: 700;
         transition: all 0.3s ease;
         border: none;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stButton > button::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+    
+    .stButton > button:hover::before {
+        width: 300px;
+        height: 300px;
     }
     
     .stButton > button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
     }
     
-    /* Primary button enhancement */
+    /* Colorful primary buttons */
     .stButton > button[kind="primary"] {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        background-size: 200% 200%;
+        animation: gradientBG 3s ease infinite;
+        color: white;
+        font-size: 1.1em;
     }
     
-    /* Selectbox styling */
+    .stButton > button[kind="secondary"] {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        color: white;
+    }
+    
+    /* Vibrant selectbox */
     .stSelectbox {
-        background-color: white;
-        border-radius: 8px;
+        background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        border-radius: 12px;
+        padding: 5px;
+        transition: all 0.3s ease;
     }
     
-    /* Progress bar styling */
+    .stSelectbox:hover {
+        transform: scale(1.02);
+        box-shadow: 0 5px 15px rgba(168, 237, 234, 0.4);
+    }
+    
+    /* Animated progress bar */
     .stProgress > div > div > div > div {
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(90deg, #f093fb 0%, #f5576c 25%, #ffd140 50%, #43e97b 75%, #38f9d7 100%);
+        background-size: 400% 400%;
+        animation: gradientBG 2s ease infinite;
+        box-shadow: 0 0 20px rgba(240, 147, 251, 0.6);
     }
     
-    /* Info/Success/Warning boxes */
+    /* Colorful alert boxes */
     .stAlert {
-        border-radius: 10px;
-        border-left: 4px solid;
-        padding: 15px;
+        border-radius: 12px;
+        border-left: 5px solid;
+        padding: 18px;
+        animation: slideIn 0.5s ease-out;
+        background: linear-gradient(135deg, #ffeaa722 0%, #fdcb6e22 100%);
     }
     
-    /* Text area styling */
+    /* Vibrant text areas */
     .stTextArea textarea {
-        border-radius: 8px;
-        border: 2px solid #e0e0e0;
-        transition: border-color 0.3s ease;
+        border-radius: 12px;
+        border: 3px solid transparent;
+        background: linear-gradient(white, white) padding-box,
+                    linear-gradient(135deg, #667eea, #764ba2, #f093fb) border-box;
+        transition: all 0.3s ease;
     }
     
     .stTextArea textarea:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+        border-color: transparent;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+        transform: scale(1.01);
     }
     
-    /* Divider styling */
+    /* Colorful divider */
     hr {
         margin: 30px 0;
         border: none;
-        border-top: 2px solid #e0e0e0;
+        height: 3px;
+        background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #667eea);
+        background-size: 300% 300%;
+        animation: gradientBG 5s ease infinite;
     }
     
-    /* Video player styling */
+    /* Video player with glow effect */
     video {
-        border-radius: 12px;
-        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        border-radius: 15px;
+        box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4);
+        animation: pulse 3s ease-in-out infinite;
     }
     
-    /* Download button section */
+    /* Animated download buttons */
     .stDownloadButton > button {
         width: 100%;
-        padding: 12px 24px;
-        border-radius: 8px;
-        font-weight: 600;
+        padding: 15px 24px;
+        border-radius: 12px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        transition: all 0.3s ease;
     }
     
-    /* Footer styling */
-    .main > div:last-child {
-        background-color: #f8f9fa;
-        border-radius: 10px;
-        padding: 20px;
-        margin-top: 30px;
+    .stDownloadButton > button:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+        background: linear-gradient(135deg, #764ba2 0%, #f093fb 100%);
     }
     
     /* Spacing improvements */
     .element-container {
-        margin-bottom: 15px;
+        margin-bottom: 20px;
+        animation: slideIn 0.6s ease-out;
     }
     
-    /* Enhanced subtitle review section */
+    /* Enhanced subtitle review section with colors */
     .subtitle-pair {
-        background-color: white;
-        border-radius: 8px;
-        padding: 15px;
-        margin-bottom: 15px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        background: linear-gradient(135deg, #ffffff 0%, #ffeaa7 100%);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(253, 203, 110, 0.3);
+        border-left: 5px solid #fdcb6e;
+        transition: all 0.3s ease;
+    }
+    
+    .subtitle-pair:hover {
+        transform: translateX(5px);
+        box-shadow: 0 6px 20px rgba(253, 203, 110, 0.5);
+    }
+    
+    /* Success message with celebration colors */
+    .stSuccess {
+        background: linear-gradient(135deg, #43e97b22 0%, #38f9d722 100%);
+        border-left-color: #43e97b !important;
+        animation: float 2s ease-in-out infinite;
+    }
+    
+    /* Info message colorful */
+    .stInfo {
+        background: linear-gradient(135deg, #667eea22 0%, #764ba222 100%);
+        border-left-color: #667eea !important;
+    }
+    
+    /* Subheader badges with colors */
+    .main .stMarkdown h2::before,
+    .main .stMarkdown h3::before {
+        content: '✨';
+        margin-right: 10px;
+        animation: pulse 2s ease-in-out infinite;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -341,7 +482,7 @@ st.markdown("""
 col1, col2 = st.columns([2, 1])
 
 with col1:
-    st.subheader("📤 Upload Video")
+    st.markdown("<h3 style='color: #e73c7e; font-weight: 700;'>📤 Upload Video</h3>", unsafe_allow_html=True)
     uploaded_file = st.file_uploader(
         "Choose an MP4 video file",
         type=['mp4'],
@@ -350,7 +491,7 @@ with col1:
     )
 
 with col2:
-    st.subheader("🌍 Select Language")
+    st.markdown("<h3 style='color: #23a6d5; font-weight: 700;'>🌍 Select Language</h3>", unsafe_allow_html=True)
     target_language = st.selectbox(
         "Target Language",
         options=list(LANGUAGES.keys()),
@@ -402,7 +543,7 @@ if uploaded_file is not None and not st.session_state.review_stage:
 if st.session_state.review_stage and not st.session_state.processed_video:
     st.divider()
     st.success("✅ Subtitles are ready for review!")
-    st.markdown("### 📝 Review and Edit Subtitles")
+    st.markdown("<h3 style='color: #2a9d8f; font-weight: 700; text-align: center;'>📝 Review and Edit Subtitles</h3>", unsafe_allow_html=True)
     st.info("Compare the original and translated subtitles below. You can edit the translated text before generating the dubbed audio.")
     
     # Create scrollable container for subtitles
