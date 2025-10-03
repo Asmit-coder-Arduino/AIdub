@@ -3,8 +3,10 @@ import os
 import tempfile
 import shutil
 from pathlib import Path
+import warnings
+warnings.filterwarnings("ignore")
 
-# Import utility modules
+# Import utility modules - FIXED: utila → utils
 from utils.video_processor import extract_audio, replace_audio_track
 from utils.transcriber import transcribe_audio
 from utils.subtitle_generator import generate_subtitle_file, format_time
