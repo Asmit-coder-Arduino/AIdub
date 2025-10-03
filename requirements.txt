@@ -1,8 +1,5 @@
 streamlit
 pysrt
-translate
 gtts
 pydub
-faster-whisper
 moviepy
-librosa
