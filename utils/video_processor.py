@@ -1,30 +1,22 @@
-import ffmpeg
 import os
-from moviepy.editor import VideoFileClip, AudioFileClip
+from moviepy.editor import VideoFileClip, AudioFileClip  # FIXED: movtepy → moviepy
 
 def extract_audio(video_path, output_audio_path):
     """
-    Extract audio from video file using ffmpeg
-    
-    Args:
-        video_path: Path to input video file
-        output_audio_path: Path where extracted audio will be saved
+    Extract audio from video file using moviepy
     """
     try:
-        stream = ffmpeg.input(video_path)
-        stream = ffmpeg.output(stream, output_audio_path, acodec='pcm_s16le', ac=1, ar='16k')
-        ffmpeg.run(stream, overwrite_output=True, quiet=True)
-    except ffmpeg.Error as e:
-        raise Exception(f"Error extracting audio: {e.stderr.decode() if e.stderr else str(e)}")
+        video = VideoFileClip(video_path)
+        audio = video.audio
+        audio.write_audiofile(output_audio_path, verbose=False, logger=None)
+        audio.close()
+        video.close()
+    except Exception as e:
+        raise Exception(f"Error extracting audio: {str(e)}")
 
 def replace_audio_track(video_path, audio_path, output_path):
     """
     Replace the audio track of a video with new audio
-    
-    Args:
-        video_path: Path to original video file
-        audio_path: Path to new audio file
-        output_path: Path where output video will be saved
     """
     try:
         # Load the video file
@@ -43,7 +35,9 @@ def replace_audio_track(video_path, audio_path, output_path):
             audio_codec='aac',
             temp_audiofile='temp-audio.m4a',
             remove_temp=True,
-            logger=None  # Suppress moviepy output
+            verbose=False,
+            logger=None,
+            threads=1
         )
         
         # Clean up
